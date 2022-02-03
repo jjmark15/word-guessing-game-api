@@ -8,7 +8,7 @@ use crate::helpers::TestContext;
 async fn is_ok() {
     let ctx = TestContext::new();
 
-    let status = ctx.client().status().await;
+    let response = ctx.client().status().await;
 
-    assert_that(&status).is_equal_to(StatusCode::OK);
+    assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::OK);
 }

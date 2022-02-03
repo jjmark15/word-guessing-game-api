@@ -15,9 +15,11 @@ dependencies = [
 name = "api_test_client"
 version = "0.1.0"
 dependencies = [
+ "derive-getters",
  "derive-new",
  "http",
  "reqwest",
+ "serde",
 ]
 
 [[package]]
@@ -133,6 +135,17 @@ name = "core-foundation-sys"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5827cebf4670468b8772dd191856768aedcb1b0278a04f989f7766351917b9dc"
+
+[[package]]
+name = "derive-getters"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0c5905670fd9c320154f3a4a01c9e609733cd7b753f3c58777ab7d5ce26686b3"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
 
 [[package]]
 name = "derive-new"
@@ -904,6 +917,20 @@ name = "serde"
 version = "1.0.136"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ce31e24b01e1e524df96f1c2fdd054405f8d7376249a5110886fb4b658484789"
+dependencies = [
+ "serde_derive",
+]
+
+[[package]]
+name = "serde_derive"
+version = "1.0.136"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "08597e7152fcd306f41838ed3e37be9eaeed2b61c42e2117266a554fab4662f9"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
 
 [[package]]
 name = "serde_json"
@@ -1364,7 +1391,10 @@ version = "0.1.0"
 dependencies = [
  "api_test_client",
  "axum",
+ "derive-getters",
  "derive-new",
+ "serde",
+ "serde_json",
  "speculoos",
  "tokio",
  "tower-http",
