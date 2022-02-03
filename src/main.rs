@@ -1,20 +1,13 @@
-use std::net::SocketAddr;
+use std::net::{IpAddr, Ipv6Addr, SocketAddr, TcpListener};
 
-use axum::http::StatusCode;
-use axum::{routing::get, Router};
+use wordle_api::App;
 
 #[tokio::main]
 async fn main() {
-    let app = Router::new().route("/admin/status", get(handler));
-
-    let address = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let address = SocketAddr::new(IpAddr::V6(Ipv6Addr::LOCALHOST), 3030);
+    let listener = TcpListener::bind(address).unwrap();
     println!("listening on {}", address);
-    axum::Server::bind(&address)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
-}
 
-async fn handler() -> StatusCode {
-    StatusCode::OK
+    let app = App::new();
+    app.run(listener).await
 }
