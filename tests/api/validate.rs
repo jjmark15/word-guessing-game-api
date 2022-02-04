@@ -34,6 +34,7 @@ async fn validates_guess_with_an_incorrect_letter() {
 
     let response = ctx.client().validate(GUESS_WITH_INCORRECT_LETTER).await;
 
+    assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::OK);
     assert_that(response.value().letters()).has_validation_results(vec![
         Validity::Correct,
         Validity::Correct,
@@ -52,6 +53,7 @@ async fn validates_guess_with_an_incorrect_position_letter() {
         .validate(GUESS_WITH_INCORRECT_POSITION_LETTER)
         .await;
 
+    assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::OK);
     assert_that(response.value().letters()).has_validation_results(vec![
         Validity::Correct,
         Validity::Correct,
