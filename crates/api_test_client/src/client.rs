@@ -19,8 +19,12 @@ impl Client {
         ApiResponse::new((), Self::http_response_details(&response))
     }
 
-    pub async fn validate(&self, guess: String) -> ApiResponse<GuessValidation> {
-        let url = format!("http://{}/guess/validate/{}", self.server_address, guess);
+    pub async fn validate(&self, guess: impl AsRef<str>) -> ApiResponse<GuessValidation> {
+        let url = format!(
+            "http://{}/guess/validate/{}",
+            self.server_address,
+            guess.as_ref()
+        );
 
         let response = self.http_client.get(url).send().await.unwrap();
         let response_details = Self::http_response_details(&response);
