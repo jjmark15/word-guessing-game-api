@@ -12,6 +12,9 @@ const GUESS_WITH_INCORRECT_LETTER: &str = "guesz";
 const GUESS_WITH_INCORRECT_POSITION_LETTER: &str = "guesg";
 const TOO_LONG_GUESS: &str = "guessy";
 const TOO_SHORT_GUESS: &str = "gues";
+const GUESS_WITH_WHITESPACE: &str = "gue s";
+const GUESS_WITH_PUNCTUATION: &str = "gues!";
+const GUESS_WITH_UPPERCASE: &str = "Guess";
 
 #[tokio::test]
 async fn validates_correct_guess() {
@@ -97,4 +100,52 @@ async fn rejects_guess_with_length_less_than_5() {
 
     assert_that(&api_error.message())
         .is_equal_to(&"guesses must have a length of 5 characters".to_string());
+}
+
+#[tokio::test]
+async fn rejects_guess_with_whitespace() {
+    let ctx = TestContext::new();
+
+    let response = ctx.client().validate(GUESS_WITH_WHITESPACE).await;
+
+    assert_that(response.http_response_details().status_code())
+        .is_equal_to(StatusCode::NOT_ACCEPTABLE);
+    assert_that(&response.http_response_details().header_value(CONTENT_TYPE))
+        .contains_value("application/json".to_owned());
+
+    let api_error = response.error();
+
+    assert_that(&api_error.message()).is_equal_to(&"guesses must only contain letters".to_string());
+}
+
+#[tokio::test]
+async fn rejects_guess_with_punctuation() {
+    let ctx = TestContext::new();
+
+    let response = ctx.client().validate(GUESS_WITH_PUNCTUATION).await;
+
+    assert_that(response.http_response_details().status_code())
+        .is_equal_to(StatusCode::NOT_ACCEPTABLE);
+    assert_that(&response.http_response_details().header_value(CONTENT_TYPE))
+        .contains_value("application/json".to_owned());
+
+    let api_error = response.error();
+
+    assert_that(&api_error.message()).is_equal_to(&"guesses must only contain letters".to_string());
+}
+
+#[tokio::test]
+async fn rejects_guess_with_uppercase_characters() {
+    let ctx = TestContext::new();
+
+    let response = ctx.client().validate(GUESS_WITH_UPPERCASE).await;
+
+    assert_that(response.http_response_details().status_code())
+        .is_equal_to(StatusCode::NOT_ACCEPTABLE);
+    assert_that(&response.http_response_details().header_value(CONTENT_TYPE))
+        .contains_value("application/json".to_owned());
+
+    let api_error = response.error();
+
+    assert_that(&api_error.message()).is_equal_to(&"guess must be lowercase".to_string());
 }
