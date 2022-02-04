@@ -1,4 +1,3 @@
-use std::convert::Infallible;
 use std::net::SocketAddr;
 
 use reqwest::Response;
@@ -15,13 +14,13 @@ pub struct Client {
 }
 
 impl Client {
-    pub async fn status(&self) -> ApiResponse<(), Infallible> {
+    pub async fn status(&self) -> ApiResponse<()> {
         let url = format!("http://{}/admin/status", self.server_address);
         let response = self.http_client.get(url).send().await.unwrap();
         ApiResponse::new((), Self::http_response_details(&response))
     }
 
-    pub async fn validate(&self, guess: impl AsRef<str>) -> ApiResponse<GuessValidation, ApiError> {
+    pub async fn validate(&self, guess: impl AsRef<str>) -> ApiResponse<GuessValidation> {
         let url = format!(
             "http://{}/guess/validate/{}",
             self.server_address,

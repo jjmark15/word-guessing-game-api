@@ -1,14 +1,14 @@
-use std::fmt::Debug;
-
 use http::header::HeaderName;
 use http::StatusCode;
 
-pub struct ApiResponse<T, E> {
-    value: Result<T, E>,
+use crate::api_error::ApiError;
+
+pub struct ApiResponse<T> {
+    value: Result<T, ApiError>,
     http_response_details: HttpResponseDetails,
 }
 
-impl<T, E: Debug> ApiResponse<T, E> {
+impl<T> ApiResponse<T> {
     pub fn new(value: T, http_response_details: HttpResponseDetails) -> Self {
         ApiResponse {
             value: Ok(value),
@@ -16,7 +16,7 @@ impl<T, E: Debug> ApiResponse<T, E> {
         }
     }
 
-    pub fn from_error(error: E, http_response_details: HttpResponseDetails) -> Self {
+    pub fn from_error(error: ApiError, http_response_details: HttpResponseDetails) -> Self {
         ApiResponse {
             value: Err(error),
             http_response_details,
@@ -27,7 +27,7 @@ impl<T, E: Debug> ApiResponse<T, E> {
         self.value.unwrap()
     }
 
-    pub fn error(self) -> E {
+    pub fn error(self) -> ApiError {
         self.value.err().unwrap()
     }
 
