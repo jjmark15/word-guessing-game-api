@@ -1,3 +1,4 @@
+use http::header::HeaderName;
 use http::StatusCode;
 
 #[derive(derive_new::new)]
@@ -19,4 +20,13 @@ impl<T> ApiResponse<T> {
 #[derive(derive_new::new, derive_getters::Getters)]
 pub struct HttpResponseDetails {
     status_code: StatusCode,
+    headers: http::HeaderMap,
+}
+
+impl HttpResponseDetails {
+    pub fn header_value(&self, header_name: HeaderName) -> Option<String> {
+        self.headers
+            .get(header_name)
+            .map(|value| value.to_str().unwrap().to_string())
+    }
 }

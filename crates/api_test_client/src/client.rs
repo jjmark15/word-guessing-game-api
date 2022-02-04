@@ -35,6 +35,6 @@ impl Client {
     }
 
     fn http_response_details(response: &Response) -> HttpResponseDetails {
-        HttpResponseDetails::new(response.status())
+        HttpResponseDetails::new(response.status(), response.headers().clone())
     }
 }

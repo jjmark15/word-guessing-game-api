@@ -1,5 +1,6 @@
 use speculoos::prelude::*;
 
+use api_test_client::http::header::CONTENT_TYPE;
 use api_test_client::http::StatusCode;
 
 use crate::helpers::TestContext;
@@ -12,6 +13,8 @@ async fn validates_correct_guess() {
     let response = ctx.client().validate(guess.clone()).await;
 
     assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::OK);
+    assert_that(&response.http_response_details().header_value(CONTENT_TYPE))
+        .contains_value("application/json".to_owned());
 
     let validation = response.value();
 
