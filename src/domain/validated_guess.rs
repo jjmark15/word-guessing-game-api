@@ -11,4 +11,6 @@ pub(crate) struct ValidatedLetter {
 
 pub(crate) enum Validity {
     Correct,
+    Incorrect,
+    IncorrectPosition,
 }

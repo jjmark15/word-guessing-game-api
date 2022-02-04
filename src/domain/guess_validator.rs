@@ -5,11 +5,22 @@ pub(crate) struct GuessValidator {}
 
 impl GuessValidator {
     pub(crate) fn validate(&self, guess: String) -> ValidatedGuess {
-        let letters = guess
+        let correct_word = "guess";
+
+        let letters = correct_word
             .chars()
-            .into_iter()
-            .map(|c| ValidatedLetter::new(c, Validity::Correct))
+            .zip(guess.chars())
+            .map(|(correct_char, char)| {
+                if correct_char == char {
+                    ValidatedLetter::new(char, Validity::Correct)
+                } else if correct_word.contains(char) {
+                    ValidatedLetter::new(char, Validity::IncorrectPosition)
+                } else {
+                    ValidatedLetter::new(char, Validity::Incorrect)
+                }
+            })
             .collect();
+
         ValidatedGuess::new(letters)
     }
 }

@@ -23,8 +23,17 @@ impl LetterValidation {
     pub fn is_correct(&self) -> bool {
         matches!(self.validation, Validity::Correct)
     }
+
+    pub fn is_incorrect(&self) -> bool {
+        matches!(self.validation, Validity::Incorrect)
+    }
+
+    pub fn is_incorrect_position(&self) -> bool {
+        matches!(self.validation, Validity::IncorrectPosition)
+    }
 }
 
+#[derive(Debug, Eq, PartialEq, Copy, Clone)]
 pub enum Validity {
     Correct,
     Incorrect,
