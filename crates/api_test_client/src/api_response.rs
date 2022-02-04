@@ -1,15 +1,34 @@
+use std::fmt::Debug;
+
 use http::header::HeaderName;
 use http::StatusCode;
 
-#[derive(derive_new::new)]
-pub struct ApiResponse<T> {
-    value: T,
+pub struct ApiResponse<T, E> {
+    value: Result<T, E>,
     http_response_details: HttpResponseDetails,
 }
 
-impl<T> ApiResponse<T> {
+impl<T, E: Debug> ApiResponse<T, E> {
+    pub fn new(value: T, http_response_details: HttpResponseDetails) -> Self {
+        ApiResponse {
+            value: Ok(value),
+            http_response_details,
+        }
+    }
+
+    pub fn from_error(error: E, http_response_details: HttpResponseDetails) -> Self {
+        ApiResponse {
+            value: Err(error),
+            http_response_details,
+        }
+    }
+
     pub fn value(self) -> T {
-        self.value
+        self.value.unwrap()
+    }
+
+    pub fn error(self) -> E {
+        self.value.err().unwrap()
     }
 
     pub fn http_response_details(&self) -> &HttpResponseDetails {

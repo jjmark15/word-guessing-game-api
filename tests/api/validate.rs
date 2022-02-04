@@ -10,6 +10,8 @@ use crate::helpers::TestContext;
 const CORRECT_GUESS: &str = "guess";
 const GUESS_WITH_INCORRECT_LETTER: &str = "guesz";
 const GUESS_WITH_INCORRECT_POSITION_LETTER: &str = "guesg";
+const TOO_LONG_GUESS: &str = "guessy";
+const TOO_SHORT_GUESS: &str = "gues";
 
 #[tokio::test]
 async fn validates_correct_guess() {
@@ -61,4 +63,38 @@ async fn validates_guess_with_an_incorrect_position_letter() {
         Validity::Correct,
         Validity::IncorrectPosition,
     ]);
+}
+
+#[tokio::test]
+async fn rejects_guess_with_length_greater_than_5() {
+    let ctx = TestContext::new();
+
+    let response = ctx.client().validate(TOO_LONG_GUESS).await;
+
+    assert_that(response.http_response_details().status_code())
+        .is_equal_to(StatusCode::NOT_ACCEPTABLE);
+    assert_that(&response.http_response_details().header_value(CONTENT_TYPE))
+        .contains_value("application/json".to_owned());
+
+    let api_error = response.error();
+
+    assert_that(&api_error.message())
+        .is_equal_to(&"guesses must have a length of 5 characters".to_string());
+}
+
+#[tokio::test]
+async fn rejects_guess_with_length_less_than_5() {
+    let ctx = TestContext::new();
+
+    let response = ctx.client().validate(TOO_SHORT_GUESS).await;
+
+    assert_that(response.http_response_details().status_code())
+        .is_equal_to(StatusCode::NOT_ACCEPTABLE);
+    assert_that(&response.http_response_details().header_value(CONTENT_TYPE))
+        .contains_value("application/json".to_owned());
+
+    let api_error = response.error();
+
+    assert_that(&api_error.message())
+        .is_equal_to(&"guesses must have a length of 5 characters".to_string());
 }

@@ -1,10 +1,12 @@
+use std::convert::Infallible;
 use std::net::SocketAddr;
 
 use reqwest::Response;
 
+use crate::api_error::ApiError;
 use crate::api_response::{ApiResponse, HttpResponseDetails};
 use crate::guess_validation::GuessValidation;
-use crate::json::GuessValidationResponse;
+use crate::response::{ErrorResponse, GuessValidationResponse};
 
 #[derive(derive_new::new)]
 pub struct Client {
@@ -13,13 +15,13 @@ pub struct Client {
 }
 
 impl Client {
-    pub async fn status(&self) -> ApiResponse<()> {
+    pub async fn status(&self) -> ApiResponse<(), Infallible> {
         let url = format!("http://{}/admin/status", self.server_address);
         let response = self.http_client.get(url).send().await.unwrap();
         ApiResponse::new((), Self::http_response_details(&response))
     }
 
-    pub async fn validate(&self, guess: impl AsRef<str>) -> ApiResponse<GuessValidation> {
+    pub async fn validate(&self, guess: impl AsRef<str>) -> ApiResponse<GuessValidation, ApiError> {
         let url = format!(
             "http://{}/guess/validate/{}",
             self.server_address,
@@ -29,13 +31,18 @@ impl Client {
         let response = self.http_client.get(url).send().await.unwrap();
         let response_details = Self::http_response_details(&response);
 
-        let validation: GuessValidation = response
-            .json::<GuessValidationResponse>()
-            .await
-            .unwrap()
-            .into();
+        if response_details.status_code().is_success() {
+            let validation: GuessValidation = response
+                .json::<GuessValidationResponse>()
+                .await
+                .unwrap()
+                .into();
 
-        ApiResponse::new(validation, response_details)
+            ApiResponse::new(validation, response_details)
+        } else {
+            let error: ApiError = response.json::<ErrorResponse>().await.unwrap().into();
+            ApiResponse::from_error(error, response_details)
+        }
     }
 
     fn http_response_details(response: &Response) -> HttpResponseDetails {
