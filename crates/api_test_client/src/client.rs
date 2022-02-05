@@ -2,10 +2,9 @@ use std::net::SocketAddr;
 
 use reqwest::Response;
 
-use crate::api_error::ApiError;
 use crate::api_response::{ApiResponse, HttpResponseDetails};
 use crate::guess_validation::GuessValidation;
-use crate::response::{ErrorResponse, GuessValidationResponse};
+use crate::response::{GuessValidationResponse, ResponseBody};
 
 #[derive(derive_new::new)]
 pub struct Client {
@@ -30,17 +29,16 @@ impl Client {
         let response = self.http_client.get(url).send().await.unwrap();
         let response_details = Self::http_response_details(&response);
 
-        if response_details.status_code().is_success() {
-            let validation: GuessValidation = response
-                .json::<GuessValidationResponse>()
-                .await
-                .unwrap()
-                .into();
+        let response_body = response
+            .json::<ResponseBody<GuessValidationResponse>>()
+            .await
+            .unwrap();
 
-            ApiResponse::new(validation, response_details)
-        } else {
-            let error: ApiError = response.json::<ErrorResponse>().await.unwrap().into();
-            ApiResponse::from_error(error, response_details)
+        match response_body {
+            ResponseBody::Error(error) => ApiResponse::from_error(error.into(), response_details),
+            ResponseBody::Ok(validation_response) => {
+                ApiResponse::new(validation_response.into(), response_details)
+            }
         }
     }
 
