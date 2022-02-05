@@ -7,20 +7,34 @@ impl GuessValidator {
     pub(crate) fn validate(&self, guess: String) -> ValidatedGuess {
         let correct_word = "guess";
 
+        let mut unused_letters: Vec<char> = correct_word.chars().collect();
+
         let letters = correct_word
             .chars()
             .zip(guess.chars())
             .map(|(correct_char, char)| {
-                if correct_char == char {
-                    ValidatedLetter::new(char, Validity::Correct)
-                } else if correct_word.contains(char) {
-                    ValidatedLetter::new(char, Validity::IncorrectPosition)
-                } else {
+                if !unused_letters.contains(&char) {
                     ValidatedLetter::new(char, Validity::Incorrect)
+                } else if correct_char == char {
+                    Self::remove_first_instance_of_letter(&mut unused_letters, &char);
+                    ValidatedLetter::new(char, Validity::Correct)
+                } else {
+                    ValidatedLetter::new(char, Validity::IncorrectPosition)
                 }
             })
             .collect();
 
         ValidatedGuess::new(letters)
+    }
+
+    fn remove_first_instance_of_letter(letters: &mut Vec<char>, letter: &char) {
+        let index = letters
+            .iter()
+            .enumerate()
+            .find(|(_i, c)| c == &letter)
+            .map(|(i, _)| i)
+            .expect("list should contain letter");
+
+        letters.remove(index);
     }
 }

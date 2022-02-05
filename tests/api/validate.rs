@@ -7,20 +7,12 @@ use api_test_client::Validity;
 use crate::helpers::assertions::HasValidationResults;
 use crate::helpers::TestContext;
 
-const CORRECT_GUESS: &str = "guess";
-const GUESS_WITH_INCORRECT_LETTER: &str = "guesz";
-const GUESS_WITH_INCORRECT_POSITION_LETTER: &str = "guesg";
-const TOO_LONG_GUESS: &str = "guessy";
-const TOO_SHORT_GUESS: &str = "gues";
-const GUESS_WITH_WHITESPACE: &str = "gue s";
-const GUESS_WITH_PUNCTUATION: &str = "gues!";
-const GUESS_WITH_UPPERCASE: &str = "Guess";
-
 #[tokio::test]
 async fn validates_correct_guess() {
     let ctx = TestContext::new();
+    let guess = "guess";
 
-    let response = ctx.client().validate(CORRECT_GUESS).await;
+    let response = ctx.client().validate(guess).await;
 
     assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::OK);
     assert_that(&response.http_response_details().header_value(CONTENT_TYPE))
@@ -28,23 +20,45 @@ async fn validates_correct_guess() {
 
     let validation = response.value();
 
-    assert_that(&validation.is_correct()).is_true();
-    assert_that(&validation.letters().len()).is_equal_to(CORRECT_GUESS.len());
-    assert_that(&validation.guess_string()).is_equal_to(CORRECT_GUESS.to_owned());
+    assert_that(validation.letters()).has_validation_results(vec![
+        Validity::Correct,
+        Validity::Correct,
+        Validity::Correct,
+        Validity::Correct,
+        Validity::Correct,
+    ]);
+    assert_that(&validation.letters().len()).is_equal_to(guess.len());
+    assert_that(&validation.guess_string()).is_equal_to(guess.to_owned());
+}
+
+#[tokio::test]
+async fn validates_guess_with_a_correct_letter() {
+    let ctx = TestContext::new();
+
+    let response = ctx.client().validate("gzzzz").await;
+
+    assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::OK);
+    assert_that(response.value().letters()).has_validation_results(vec![
+        Validity::Correct,
+        Validity::Incorrect,
+        Validity::Incorrect,
+        Validity::Incorrect,
+        Validity::Incorrect,
+    ]);
 }
 
 #[tokio::test]
 async fn validates_guess_with_an_incorrect_letter() {
     let ctx = TestContext::new();
 
-    let response = ctx.client().validate(GUESS_WITH_INCORRECT_LETTER).await;
+    let response = ctx.client().validate("zzzzz").await;
 
     assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::OK);
     assert_that(response.value().letters()).has_validation_results(vec![
-        Validity::Correct,
-        Validity::Correct,
-        Validity::Correct,
-        Validity::Correct,
+        Validity::Incorrect,
+        Validity::Incorrect,
+        Validity::Incorrect,
+        Validity::Incorrect,
         Validity::Incorrect,
     ]);
 }
@@ -53,18 +67,31 @@ async fn validates_guess_with_an_incorrect_letter() {
 async fn validates_guess_with_an_incorrect_position_letter() {
     let ctx = TestContext::new();
 
-    let response = ctx
-        .client()
-        .validate(GUESS_WITH_INCORRECT_POSITION_LETTER)
-        .await;
+    let response = ctx.client().validate("zgzzz").await;
+
+    assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::OK);
+    assert_that(response.value().letters()).has_validation_results(vec![
+        Validity::Incorrect,
+        Validity::IncorrectPosition,
+        Validity::Incorrect,
+        Validity::Incorrect,
+        Validity::Incorrect,
+    ]);
+}
+
+#[tokio::test]
+async fn unnecessary_correct_letter_in_incorrect_position_is_incorrect() {
+    let ctx = TestContext::new();
+
+    let response = ctx.client().validate("ggzzz").await;
 
     assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::OK);
     assert_that(response.value().letters()).has_validation_results(vec![
         Validity::Correct,
-        Validity::Correct,
-        Validity::Correct,
-        Validity::Correct,
-        Validity::IncorrectPosition,
+        Validity::Incorrect,
+        Validity::Incorrect,
+        Validity::Incorrect,
+        Validity::Incorrect,
     ]);
 }
 
@@ -72,7 +99,7 @@ async fn validates_guess_with_an_incorrect_position_letter() {
 async fn rejects_guess_with_length_greater_than_5() {
     let ctx = TestContext::new();
 
-    let response = ctx.client().validate(TOO_LONG_GUESS).await;
+    let response = ctx.client().validate("zzzzzz").await;
 
     assert_that(response.http_response_details().status_code())
         .is_equal_to(StatusCode::NOT_ACCEPTABLE);
@@ -86,7 +113,7 @@ async fn rejects_guess_with_length_greater_than_5() {
 async fn rejects_guess_with_length_less_than_5() {
     let ctx = TestContext::new();
 
-    let response = ctx.client().validate(TOO_SHORT_GUESS).await;
+    let response = ctx.client().validate("zzzz").await;
 
     assert_that(response.http_response_details().status_code())
         .is_equal_to(StatusCode::NOT_ACCEPTABLE);
@@ -100,7 +127,7 @@ async fn rejects_guess_with_length_less_than_5() {
 async fn rejects_guess_with_whitespace() {
     let ctx = TestContext::new();
 
-    let response = ctx.client().validate(GUESS_WITH_WHITESPACE).await;
+    let response = ctx.client().validate("zzz z").await;
 
     assert_that(response.http_response_details().status_code())
         .is_equal_to(StatusCode::NOT_ACCEPTABLE);
@@ -114,7 +141,7 @@ async fn rejects_guess_with_whitespace() {
 async fn rejects_guess_with_punctuation() {
     let ctx = TestContext::new();
 
-    let response = ctx.client().validate(GUESS_WITH_PUNCTUATION).await;
+    let response = ctx.client().validate("zzzz!").await;
 
     assert_that(response.http_response_details().status_code())
         .is_equal_to(StatusCode::NOT_ACCEPTABLE);
@@ -128,7 +155,7 @@ async fn rejects_guess_with_punctuation() {
 async fn rejects_guess_with_uppercase_characters() {
     let ctx = TestContext::new();
 
-    let response = ctx.client().validate(GUESS_WITH_UPPERCASE).await;
+    let response = ctx.client().validate("Zzzzz").await;
 
     assert_that(response.http_response_details().status_code())
         .is_equal_to(StatusCode::NOT_ACCEPTABLE);
