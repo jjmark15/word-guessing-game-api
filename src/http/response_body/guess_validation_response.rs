@@ -14,7 +14,7 @@ pub(crate) struct LetterValidation {
 }
 
 #[derive(Serialize)]
-#[serde(rename_all = "UPPERCASE")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub(crate) enum Validity {
     Correct,
     Incorrect,
