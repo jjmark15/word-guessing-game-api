@@ -5,6 +5,7 @@ use axum::{routing::get, AddExtensionLayer, Router};
 use tower_http::trace::TraceLayer;
 
 use crate::application::ApplicationService;
+use crate::http::latest_challenge::latest_challenge_handler;
 use crate::http::status::status_handler;
 use crate::http::validate::validation_handler;
 
@@ -17,7 +18,11 @@ impl AxumServer {
 
         let app = Router::new()
             .route("/admin/status", get(status_handler))
-            .route("/guess/validate/:guess", get(validation_handler))
+            .route("/challenge/latest", get(latest_challenge_handler))
+            .route(
+                "/challenge/:challenge_id/guess/validation/:guess",
+                get(validation_handler),
+            )
             .layer(AddExtensionLayer::new(application_service.clone()))
             .layer(TraceLayer::new_for_http());
 

@@ -11,8 +11,9 @@ use crate::helpers::TestContext;
 async fn validates_correct_guess() {
     let ctx = TestContext::new();
     let guess = "guess";
+    let challenge_id = ctx.client().latest_challenge().await.value();
 
-    let response = ctx.client().validate(guess).await;
+    let response = ctx.client().validate(challenge_id, guess).await;
 
     assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::OK);
     assert_that(&response.http_response_details().header_value(CONTENT_TYPE))
@@ -34,8 +35,9 @@ async fn validates_correct_guess() {
 #[tokio::test]
 async fn validates_guess_with_a_correct_letter() {
     let ctx = TestContext::new();
+    let challenge_id = ctx.client().latest_challenge().await.value();
 
-    let response = ctx.client().validate("gzzzz").await;
+    let response = ctx.client().validate(challenge_id, "gzzzz").await;
 
     assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::OK);
     assert_that(response.value().letters()).has_validation_results(vec![
@@ -50,8 +52,9 @@ async fn validates_guess_with_a_correct_letter() {
 #[tokio::test]
 async fn validates_guess_with_an_incorrect_letter() {
     let ctx = TestContext::new();
+    let challenge_id = ctx.client().latest_challenge().await.value();
 
-    let response = ctx.client().validate("zzzzz").await;
+    let response = ctx.client().validate(challenge_id, "zzzzz").await;
 
     assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::OK);
     assert_that(response.value().letters()).has_validation_results(vec![
@@ -66,8 +69,9 @@ async fn validates_guess_with_an_incorrect_letter() {
 #[tokio::test]
 async fn validates_guess_with_an_incorrect_position_letter() {
     let ctx = TestContext::new();
+    let challenge_id = ctx.client().latest_challenge().await.value();
 
-    let response = ctx.client().validate("zgzzz").await;
+    let response = ctx.client().validate(challenge_id, "zgzzz").await;
 
     assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::OK);
     assert_that(response.value().letters()).has_validation_results(vec![
@@ -82,8 +86,9 @@ async fn validates_guess_with_an_incorrect_position_letter() {
 #[tokio::test]
 async fn unnecessary_correct_letter_in_incorrect_position_is_incorrect() {
     let ctx = TestContext::new();
+    let challenge_id = ctx.client().latest_challenge().await.value();
 
-    let response = ctx.client().validate("ggzzz").await;
+    let response = ctx.client().validate(challenge_id, "ggzzz").await;
 
     assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::OK);
     assert_that(response.value().letters()).has_validation_results(vec![
@@ -98,8 +103,9 @@ async fn unnecessary_correct_letter_in_incorrect_position_is_incorrect() {
 #[tokio::test]
 async fn rejects_guess_with_length_greater_than_5() {
     let ctx = TestContext::new();
+    let challenge_id = ctx.client().latest_challenge().await.value();
 
-    let response = ctx.client().validate("zzzzzz").await;
+    let response = ctx.client().validate(challenge_id, "zzzzzz").await;
 
     assert_that(response.http_response_details().status_code())
         .is_equal_to(StatusCode::NOT_ACCEPTABLE);
@@ -112,8 +118,9 @@ async fn rejects_guess_with_length_greater_than_5() {
 #[tokio::test]
 async fn rejects_guess_with_length_less_than_5() {
     let ctx = TestContext::new();
+    let challenge_id = ctx.client().latest_challenge().await.value();
 
-    let response = ctx.client().validate("zzzz").await;
+    let response = ctx.client().validate(challenge_id, "zzzz").await;
 
     assert_that(response.http_response_details().status_code())
         .is_equal_to(StatusCode::NOT_ACCEPTABLE);
@@ -126,8 +133,9 @@ async fn rejects_guess_with_length_less_than_5() {
 #[tokio::test]
 async fn rejects_guess_with_whitespace() {
     let ctx = TestContext::new();
+    let challenge_id = ctx.client().latest_challenge().await.value();
 
-    let response = ctx.client().validate("zzz z").await;
+    let response = ctx.client().validate(challenge_id, "zzz z").await;
 
     assert_that(response.http_response_details().status_code())
         .is_equal_to(StatusCode::NOT_ACCEPTABLE);
@@ -140,8 +148,9 @@ async fn rejects_guess_with_whitespace() {
 #[tokio::test]
 async fn rejects_guess_with_punctuation() {
     let ctx = TestContext::new();
+    let challenge_id = ctx.client().latest_challenge().await.value();
 
-    let response = ctx.client().validate("zzzz!").await;
+    let response = ctx.client().validate(challenge_id, "zzzz!").await;
 
     assert_that(response.http_response_details().status_code())
         .is_equal_to(StatusCode::NOT_ACCEPTABLE);
@@ -154,12 +163,29 @@ async fn rejects_guess_with_punctuation() {
 #[tokio::test]
 async fn rejects_guess_with_uppercase_characters() {
     let ctx = TestContext::new();
+    let challenge_id = ctx.client().latest_challenge().await.value();
 
-    let response = ctx.client().validate("Zzzzz").await;
+    let response = ctx.client().validate(challenge_id, "Zzzzz").await;
 
     assert_that(response.http_response_details().status_code())
         .is_equal_to(StatusCode::NOT_ACCEPTABLE);
     assert_that(&response.http_response_details().header_value(CONTENT_TYPE))
         .contains_value("application/json".to_owned());
     assert_that(&response.error().message()).is_equal_to(&"guess must be lowercase".to_string());
+}
+
+#[tokio::test]
+async fn rejects_guess_for_non_existent_challenge() {
+    let ctx = TestContext::new();
+
+    let response = ctx
+        .client()
+        .validate("non-existent challenge", "zzzzz")
+        .await;
+
+    assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::NOT_FOUND);
+    assert_that(&response.http_response_details().header_value(CONTENT_TYPE))
+        .contains_value("application/json".to_owned());
+    assert_that(&response.error().message())
+        .is_equal_to(&"challenge with ID 'non-existent challenge' not found".to_string());
 }

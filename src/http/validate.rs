@@ -7,15 +7,17 @@ use axum::Json;
 use serde_json::json;
 
 use crate::application::ApplicationService;
+use crate::domain;
 use crate::http::response_body::GuessValidationResponse;
 
 pub(crate) async fn validation_handler(
-    Path(guess): Path<String>,
+    Path((challenge_id, guess)): Path<(String, String)>,
     Extension(application_service): Extension<Arc<ApplicationService>>,
 ) -> Result<Response, ValidateGuessError> {
     reject_invalid_guess_input(&guess)?;
 
-    let validated_guess: GuessValidationResponse = application_service.validate(guess).into();
+    let validated_guess: GuessValidationResponse =
+        application_service.validate(challenge_id, guess)?.into();
     let body = Json(json!(validated_guess));
 
     Ok((StatusCode::OK, body).into_response())
@@ -45,6 +47,18 @@ pub(crate) enum ValidateGuessError {
     NotLetters,
     #[error("guess must be lowercase")]
     Uppercase,
+    #[error(transparent)]
+    ChallengeNotFound(#[from] domain::ChallengeNotFoundError),
+}
+
+impl From<domain::ValidateGuessError> for ValidateGuessError {
+    fn from(from: domain::ValidateGuessError) -> Self {
+        match from {
+            domain::ValidateGuessError::ChallengeNotFound(inner) => {
+                ValidateGuessError::ChallengeNotFound(inner)
+            }
+        }
+    }
 }
 
 impl IntoResponse for ValidateGuessError {
@@ -53,6 +67,7 @@ impl IntoResponse for ValidateGuessError {
             ValidateGuessError::IncorrectLength
             | ValidateGuessError::NotLetters
             | ValidateGuessError::Uppercase => StatusCode::NOT_ACCEPTABLE,
+            ValidateGuessError::ChallengeNotFound(_) => StatusCode::NOT_FOUND,
         };
 
         let body = Json(json!({

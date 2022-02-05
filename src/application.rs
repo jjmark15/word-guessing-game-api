@@ -6,7 +6,11 @@ pub(crate) struct ApplicationService {
 }
 
 impl ApplicationService {
-    pub(crate) fn validate(&self, guess: String) -> domain::ValidatedGuess {
-        self.guess_validator.validate(guess)
+    pub(crate) fn validate(
+        &self,
+        challenge_id: String,
+        guess: String,
+    ) -> Result<domain::ValidatedGuess, domain::ValidateGuessError> {
+        self.guess_validator.validate(challenge_id, guess)
     }
 }

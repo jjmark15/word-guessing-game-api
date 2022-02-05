@@ -4,8 +4,12 @@ use crate::domain::validated_guess::{ValidatedGuess, ValidatedLetter, Validity};
 pub(crate) struct GuessValidator {}
 
 impl GuessValidator {
-    pub(crate) fn validate(&self, guess: String) -> ValidatedGuess {
-        let correct_word = "guess";
+    pub(crate) fn validate(
+        &self,
+        challenge_id: String,
+        guess: String,
+    ) -> Result<ValidatedGuess, ValidateGuessError> {
+        let correct_word = self.get_correct_answer(challenge_id)?;
 
         let mut unused_letters: Vec<char> = correct_word.chars().collect();
 
@@ -24,7 +28,14 @@ impl GuessValidator {
             })
             .collect();
 
-        ValidatedGuess::new(letters)
+        Ok(ValidatedGuess::new(letters))
+    }
+
+    fn get_correct_answer(&self, challenge_id: String) -> Result<String, ChallengeNotFoundError> {
+        if challenge_id != "challenge_id" {
+            return Err(ChallengeNotFoundError(challenge_id));
+        }
+        Ok("guess".to_owned())
     }
 
     fn remove_first_instance_of_letter(letters: &mut Vec<char>, letter: &char) {
@@ -38,3 +49,13 @@ impl GuessValidator {
         letters.remove(index);
     }
 }
+
+#[derive(Debug, thiserror::Error)]
+#[error(transparent)]
+pub(crate) enum ValidateGuessError {
+    ChallengeNotFound(#[from] ChallengeNotFoundError),
+}
+
+#[derive(Debug, thiserror::Error)]
+#[error("challenge with ID '{0}' not found")]
+pub(crate) struct ChallengeNotFoundError(String);
