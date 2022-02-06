@@ -1406,7 +1406,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "wordle-api"
+name = "word-guessing-game-api"
 version = "0.1.0"
 dependencies = [
  "api_test_client",

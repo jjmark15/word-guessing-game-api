@@ -1,4 +1,4 @@
-# Wordle API
+# Word guessing game API
 
 A simple REST backend API designed to imitate the Wordle word guessing game. Just a bit of fun really.
 
@@ -11,7 +11,7 @@ cargo build --release
 ## How to run
 
 ```shell
-./wordle-api
+./word-guessing-game-api
 ```
 
 ## How to test

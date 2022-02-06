@@ -3,7 +3,7 @@ use std::net::{IpAddr, Ipv6Addr, SocketAddr, TcpListener};
 use tokio::task::JoinHandle;
 
 use api_test_client::{Client, HttpClient};
-use wordle_api::App;
+use word_guessing_game_api::App;
 
 pub(crate) struct TestContext {
     client: Client,
