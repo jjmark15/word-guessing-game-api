@@ -42,8 +42,7 @@ impl GuessValidator {
         let index = letters
             .iter()
             .enumerate()
-            .find(|(_i, c)| c == &letter)
-            .map(|(i, _)| i)
+            .find_map(|(i, c)| if c == letter { Some(i) } else { None })
             .expect("list should contain letter");
 
         letters.remove(index);
