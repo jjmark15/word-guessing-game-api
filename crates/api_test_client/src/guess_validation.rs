@@ -4,10 +4,6 @@ pub struct GuessValidation {
 }
 
 impl GuessValidation {
-    pub fn is_correct(&self) -> bool {
-        self.letters.iter().all(LetterValidation::is_correct)
-    }
-
     pub fn guess_string(&self) -> String {
         self.letters.iter().map(|letter| letter.letter()).collect()
     }
@@ -17,20 +13,6 @@ impl GuessValidation {
 pub struct LetterValidation {
     letter: char,
     validation: Validity,
-}
-
-impl LetterValidation {
-    pub fn is_correct(&self) -> bool {
-        matches!(self.validation, Validity::Correct)
-    }
-
-    pub fn is_incorrect(&self) -> bool {
-        matches!(self.validation, Validity::Incorrect)
-    }
-
-    pub fn is_incorrect_position(&self) -> bool {
-        matches!(self.validation, Validity::IncorrectPosition)
-    }
 }
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone)]

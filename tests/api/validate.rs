@@ -33,24 +33,7 @@ async fn validates_correct_guess() {
 }
 
 #[tokio::test]
-async fn validates_guess_with_a_correct_letter() {
-    let ctx = TestContext::new();
-    let challenge_id = ctx.client().latest_challenge().await.value();
-
-    let response = ctx.client().validate(challenge_id, "gzzzz").await;
-
-    assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::OK);
-    assert_that(response.value().letters()).has_validation_results(vec![
-        Validity::Correct,
-        Validity::Incorrect,
-        Validity::Incorrect,
-        Validity::Incorrect,
-        Validity::Incorrect,
-    ]);
-}
-
-#[tokio::test]
-async fn validates_guess_with_an_incorrect_letter() {
+async fn validates_completely_incorrect_guess() {
     let ctx = TestContext::new();
     let challenge_id = ctx.client().latest_challenge().await.value();
 
@@ -67,20 +50,37 @@ async fn validates_guess_with_an_incorrect_letter() {
 }
 
 #[tokio::test]
-async fn validates_guess_with_an_incorrect_position_letter() {
+async fn validates_guess_with_a_correct_letter() {
+    let ctx = TestContext::new();
+    let challenge_id = ctx.client().latest_challenge().await.value();
+
+    let response = ctx.client().validate(challenge_id, "gzzzz").await;
+
+    assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::OK);
+    assert_that(response.value().letters()).has_validity_at_letter_index(0, Validity::Correct);
+}
+
+#[tokio::test]
+async fn validates_guess_with_an_incorrect_letter() {
+    let ctx = TestContext::new();
+    let challenge_id = ctx.client().latest_challenge().await.value();
+
+    let response = ctx.client().validate(challenge_id, "zuess").await;
+
+    assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::OK);
+    assert_that(response.value().letters()).has_validity_at_letter_index(0, Validity::Incorrect);
+}
+
+#[tokio::test]
+async fn validates_guess_with_letter_in_incorrect_position() {
     let ctx = TestContext::new();
     let challenge_id = ctx.client().latest_challenge().await.value();
 
     let response = ctx.client().validate(challenge_id, "zgzzz").await;
 
     assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::OK);
-    assert_that(response.value().letters()).has_validation_results(vec![
-        Validity::Incorrect,
-        Validity::IncorrectPosition,
-        Validity::Incorrect,
-        Validity::Incorrect,
-        Validity::Incorrect,
-    ]);
+    assert_that(response.value().letters())
+        .has_validity_at_letter_index(1, Validity::IncorrectPosition);
 }
 
 #[tokio::test]
@@ -89,15 +89,14 @@ async fn unnecessary_correct_letter_in_incorrect_position_is_incorrect() {
     let challenge_id = ctx.client().latest_challenge().await.value();
 
     let response = ctx.client().validate(challenge_id, "ggzzz").await;
+    let http_response_details = response.http_response_details();
 
-    assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::OK);
-    assert_that(response.value().letters()).has_validation_results(vec![
-        Validity::Correct,
-        Validity::Incorrect,
-        Validity::Incorrect,
-        Validity::Incorrect,
-        Validity::Incorrect,
-    ]);
+    assert_that(http_response_details.status_code()).is_equal_to(StatusCode::OK);
+
+    let validation = response.value();
+
+    assert_that(validation.letters()).has_validity_at_letter_index(0, Validity::Correct);
+    assert_that(validation.letters()).has_validity_at_letter_index(1, Validity::Incorrect);
 }
 
 #[tokio::test]
