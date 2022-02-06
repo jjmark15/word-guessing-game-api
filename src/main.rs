@@ -1,6 +1,6 @@
-use std::net::{IpAddr, Ipv6Addr, SocketAddr, TcpListener};
+use std::process::exit;
 
-use word_guessing_game_api::App;
+use word_guessing_game_api::cli::run_cli;
 
 #[tokio::main]
 async fn main() {
@@ -9,10 +9,11 @@ async fn main() {
     }
     tracing_subscriber::fmt::init();
 
-    let address = SocketAddr::new(IpAddr::V6(Ipv6Addr::LOCALHOST), 3030);
-    let listener = TcpListener::bind(address).unwrap();
-    tracing::info!("server listening on {}", address);
-
-    let app = App::new();
-    app.run(listener).await
+    match run_cli().await {
+        Ok((future, _)) => future.await,
+        Err(error) => {
+            tracing::error!("{error}");
+            exit(1);
+        }
+    }
 }

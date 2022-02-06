@@ -9,11 +9,10 @@ use crate::http::latest_challenge::latest_challenge_handler;
 use crate::http::status::status_handler;
 use crate::http::validate::validation_handler;
 
-#[derive(derive_new::new)]
 pub(crate) struct AxumServer {}
 
 impl AxumServer {
-    pub async fn run(&self, listener: TcpListener, application_service: ApplicationService) {
+    pub async fn run(listener: TcpListener, application_service: ApplicationService) {
         let application_service = Arc::new(application_service);
 
         let app = Router::new()
