@@ -5,7 +5,7 @@ use word_guessing_game_api::cli::run_cli;
 #[tokio::main]
 async fn main() {
     if std::env::var_os("RUST_LOG").is_none() {
-        std::env::set_var("RUST_LOG", "word_guessing_game_api=debug,tower_http=debug")
+        std::env::set_var("RUST_LOG", "word_guessing_game_api=info,tower_http=info")
     }
     tracing_subscriber::fmt::init();
 
