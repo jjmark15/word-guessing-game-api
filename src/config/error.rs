@@ -10,7 +10,6 @@ pub(crate) enum ReadConfigError {
 
 impl From<ExternalConfigError> for ReadConfigError {
     fn from(from: ExternalConfigError) -> Self {
-        dbg!(&from);
         match from {
             ConfigError::Type { .. } => ReadConfigError::InvalidConfigContent,
             ConfigError::Foreign { .. } => ReadConfigError::ReadConfigFile,
