@@ -16,6 +16,11 @@ cargo build --release
 
 ## How to test
 
+Start server with e.g.:
+```shell
+./scripts/server_autoreload.sh
+```
+
 ```shell
 cargo test
 ```
