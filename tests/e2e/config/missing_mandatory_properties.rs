@@ -19,7 +19,7 @@ async fn fails_to_start_without_server_port() {
         .expect("app should fail to start");
 
     assert_that(&start_app_error.to_string())
-        .is_equal_to(&"config contains invalid content".to_string());
+        .is_equal_to(&"config is missing mandatory fields".to_string());
 }
 
 #[tokio::test]

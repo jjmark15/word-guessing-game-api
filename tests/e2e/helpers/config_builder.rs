@@ -46,6 +46,7 @@ impl ApplicationConfigBuilder {
 
 #[derive(Clone, serde::Serialize)]
 pub(crate) struct ServerConfig {
+    #[serde(skip_serializing_if = "Option::is_none")]
     port: Option<u16>,
 }
 
