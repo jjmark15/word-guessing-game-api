@@ -6,7 +6,7 @@ use std::path::Path;
 
 use crate::application::ApplicationService;
 use crate::config::{ApplicationConfig, ConfigReader, ReadConfigError};
-use crate::domain::GuessValidator;
+use crate::domain::{AnswerRepository, GuessValidator};
 use crate::http::axum_server::AxumServer;
 
 mod application;
@@ -30,7 +30,7 @@ impl App {
         tracing::info!("server listening on {socket_address}");
 
         Ok((
-            AxumServer::run(listener, ApplicationService::new(GuessValidator::new())),
+            AxumServer::run(listener, Self::application_service(&config)),
             socket_address,
         ))
     }
@@ -38,6 +38,11 @@ impl App {
     fn tcp_listener(port: u16) -> TcpListener {
         let address = SocketAddr::new(IpAddr::V6(Ipv6Addr::LOCALHOST), port);
         TcpListener::bind(address).unwrap()
+    }
+
+    fn application_service(config: &ApplicationConfig) -> ApplicationService {
+        let answer_repository = AnswerRepository::new(config.challenges().answers().clone());
+        ApplicationService::new(GuessValidator::new(), answer_repository)
     }
 }
 

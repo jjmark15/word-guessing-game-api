@@ -14,5 +14,5 @@ async fn gets_latest() {
     assert_that(response.http_response_details().status_code()).is_equal_to(StatusCode::OK);
     assert_that(&response.http_response_details().header_value(CONTENT_TYPE))
         .contains_value("application/json".to_owned());
-    assert_that(&response.value()).is_equal_to("challenge_id".to_owned())
+    assert_that(&response.value()).is_equal_to("0".to_owned())
 }

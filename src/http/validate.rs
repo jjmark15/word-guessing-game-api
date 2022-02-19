@@ -7,8 +7,8 @@ use axum::Json;
 use serde_json::json;
 
 use crate::application::ApplicationService;
-use crate::domain;
 use crate::http::response_body::GuessValidationResponse;
+use crate::{application, domain};
 
 pub(crate) async fn validation_handler(
     Path((challenge_id, guess)): Path<(String, String)>,
@@ -51,10 +51,10 @@ pub(crate) enum ValidateGuessError {
     ChallengeNotFound(#[from] domain::ChallengeNotFoundError),
 }
 
-impl From<domain::ValidateGuessError> for ValidateGuessError {
-    fn from(from: domain::ValidateGuessError) -> Self {
+impl From<application::ValidateGuessError> for ValidateGuessError {
+    fn from(from: application::ValidateGuessError) -> Self {
         match from {
-            domain::ValidateGuessError::ChallengeNotFound(inner) => {
+            application::ValidateGuessError::ChallengeNotFound(inner) => {
                 ValidateGuessError::ChallengeNotFound(inner)
             }
         }

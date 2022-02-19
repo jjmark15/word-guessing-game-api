@@ -2,3 +2,6 @@
 
 server:
   port: 3030
+
+challenges:
+  answers: [ "guess" ]

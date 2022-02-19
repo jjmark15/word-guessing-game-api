@@ -6,6 +6,8 @@ pub(crate) enum ReadConfigError {
     InvalidConfigContent,
     #[error("could not read config from file")]
     ReadConfigFile,
+    #[error("config is missing mandatory fields")]
+    MissingMandatoryField,
 }
 
 impl From<ExternalConfigError> for ReadConfigError {
@@ -13,7 +15,8 @@ impl From<ExternalConfigError> for ReadConfigError {
         match from {
             ConfigError::Type { .. } => ReadConfigError::InvalidConfigContent,
             ConfigError::Foreign { .. } => ReadConfigError::ReadConfigFile,
-            _ => unimplemented!(),
+            ConfigError::Message(_) => ReadConfigError::MissingMandatoryField,
+            _ => unimplemented!("{}", from),
         }
     }
 }
