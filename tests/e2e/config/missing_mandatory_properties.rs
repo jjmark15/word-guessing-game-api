@@ -13,7 +13,7 @@ async fn fails_to_start_without_server_port() {
         .build();
     ctx.create_config_file(application_config);
 
-    let start_app_error = App::run(ctx.config_file_path().as_path())
+    let start_app_error = App::run(ctx.config_file_path())
         .await
         .err()
         .expect("app should fail to start");
@@ -30,7 +30,7 @@ async fn fails_to_start_without_challenge_answers() {
         .build();
     ctx.create_config_file(application_config);
 
-    let start_app_error = App::run(ctx.config_file_path().as_path())
+    let start_app_error = App::run(ctx.config_file_path())
         .await
         .err()
         .expect("app should fail to start");

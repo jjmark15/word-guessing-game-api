@@ -8,7 +8,7 @@ use crate::helpers::E2ETestContext;
 async fn fails_to_start_if_config_file_not_found() {
     let ctx = E2ETestContext::new();
 
-    let start_app_error = App::run(ctx.config_file_path().as_path())
+    let start_app_error = App::run(ctx.config_file_path())
         .await
         .err()
         .expect("app should fail to start");
