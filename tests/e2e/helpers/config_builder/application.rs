@@ -5,6 +5,7 @@ use crate::helpers::config_builder::{Builder, OptionalBuilder};
 #[derive(serde::Serialize)]
 pub(crate) struct ApplicationConfig {
     server: Option<ServerConfig>,
+    challenges: Option<ChallengesConfig>,
 }
 
 pub(crate) struct ApplicationConfigBuilder {
@@ -47,6 +48,7 @@ impl ApplicationConfigBuilder {
     fn build(self) -> ApplicationConfig {
         ApplicationConfig {
             server: self.server,
+            challenges: self.challenges,
         }
     }
 }
