@@ -9,9 +9,13 @@ pub(crate) struct ConfigReader {}
 
 impl ConfigReader {
     pub(crate) fn read(&self, path: &Path) -> Result<ApplicationConfig, ReadConfigError> {
-        let mut config = Config::default();
-        config.merge(config::File::from(path))?;
+        let settings = Config::builder()
+            .add_source(config::File::from(path))
+            .build()
+            .map_err(ReadConfigError::from)?;
 
-        Ok(config.try_into::<ApplicationConfig>()?)
+        settings
+            .try_deserialize::<ApplicationConfig>()
+            .map_err(ReadConfigError::from)
     }
 }
