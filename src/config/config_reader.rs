@@ -9,13 +9,11 @@ pub(crate) struct ConfigReader {}
 
 impl ConfigReader {
     pub(crate) fn read(&self, path: &Path) -> Result<ApplicationConfig, ReadConfigError> {
-        let settings = Config::builder()
+        Config::builder()
             .add_source(config::File::from(path))
             .build()
-            .map_err(ReadConfigError::from)?;
-
-        settings
+            .map_err(|_e| ReadConfigError::ReadConfigFile)?
             .try_deserialize::<ApplicationConfig>()
-            .map_err(ReadConfigError::from)
+            .map_err(|_e| ReadConfigError::MissingMandatoryField)
     }
 }
