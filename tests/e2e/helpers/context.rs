@@ -17,7 +17,7 @@ impl E2ETestContext {
 }
 
 impl E2ETestContext {
-    pub(crate) fn create_config_file(&mut self, application_config: ApplicationConfig) {
+    pub(crate) fn create_config_file(&self, application_config: ApplicationConfig) {
         std::fs::write(
             self.config_file_path(),
             serde_yaml::to_string(&application_config).unwrap(),

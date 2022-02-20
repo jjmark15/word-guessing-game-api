@@ -7,7 +7,7 @@ use crate::helpers::E2ETestContext;
 
 #[tokio::test]
 async fn fails_to_start_without_server_port() {
-    let mut ctx = E2ETestContext::new();
+    let ctx = E2ETestContext::new();
     let application_config = ApplicationConfig::builder()
         .with_server(ServerConfig::builder().with_port(None))
         .build();
@@ -24,7 +24,7 @@ async fn fails_to_start_without_server_port() {
 
 #[tokio::test]
 async fn fails_to_start_without_challenge_answers() {
-    let mut ctx = E2ETestContext::new();
+    let ctx = E2ETestContext::new();
     let application_config = ApplicationConfig::builder()
         .with_challenges(ChallengesConfig::builder().with_answers(None))
         .build();
