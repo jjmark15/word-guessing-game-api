@@ -5,7 +5,9 @@ use std::net::{IpAddr, Ipv6Addr, SocketAddr, TcpListener};
 use std::path::Path;
 
 use crate::application::ApplicationService;
-use crate::config::{ApplicationConfig, ConfigReader, ReadConfigError};
+use crate::config::{
+    ApplicationConfig, ConfigReader, ConfigValidator, ReadConfigError, ValidationError,
+};
 use crate::domain::{AnswerRepository, GuessValidator};
 use crate::http::axum_server::AxumServer;
 
@@ -23,6 +25,10 @@ impl App {
     ) -> Result<(impl Future<Output = ()>, SocketAddr), RunAppError> {
         let config: ApplicationConfig = ConfigReader::new()
             .read(config_path)
+            .map_err(RunAppError::from)?;
+
+        ConfigValidator::new()
+            .validate(&config)
             .map_err(RunAppError::from)?;
 
         let listener = Self::tcp_listener(*config.server().port());
@@ -64,4 +70,5 @@ impl RunAppError {
 #[error(transparent)]
 enum RunAppErrorKind {
     ReadConfig(#[from] ReadConfigError),
+    ValidateConfig(#[from] ValidationError),
 }
