@@ -10,7 +10,7 @@ use crate::http::response_body::LatestChallengeResponse;
 use crate::ApplicationService;
 
 pub(crate) async fn latest_challenge_handler(
-    Extension(application_service): Extension<Arc<ApplicationService>>,
+    application_service: Extension<Arc<ApplicationService>>,
 ) -> impl IntoResponse {
     let challenge_id = application_service.latest_challenge();
     let body = Json(json!(LatestChallengeResponse::new(challenge_id)));

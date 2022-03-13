@@ -1,7 +1,8 @@
 use std::net::TcpListener;
 use std::sync::Arc;
 
-use axum::{routing::get, AddExtensionLayer, Router};
+use axum::extract::Extension;
+use axum::{routing::get, Router};
 use tower_http::trace::TraceLayer;
 
 use crate::application::ApplicationService;
@@ -22,7 +23,7 @@ impl AxumServer {
                 "/challenge/:challenge_id/guess/validation/:guess",
                 get(validation_handler),
             )
-            .layer(AddExtensionLayer::new(application_service.clone()))
+            .layer(Extension(application_service.clone()))
             .layer(TraceLayer::new_for_http());
 
         axum::Server::from_tcp(listener)

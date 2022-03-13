@@ -12,7 +12,7 @@ use crate::{application, domain};
 
 pub(crate) async fn validation_handler(
     Path((challenge_id, guess)): Path<(String, String)>,
-    Extension(application_service): Extension<Arc<ApplicationService>>,
+    application_service: Extension<Arc<ApplicationService>>,
 ) -> Result<Response, ValidateGuessError> {
     reject_invalid_guess_input(&guess)?;
 
