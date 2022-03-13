@@ -14,22 +14,24 @@ pub(crate) struct AxumServer {}
 
 impl AxumServer {
     pub async fn run(listener: TcpListener, application_service: ApplicationService) {
-        let application_service = Arc::new(application_service);
-
-        let app = Router::new()
-            .route("/admin/status", get(status_handler))
-            .route("/challenge/latest", get(latest_challenge_handler))
-            .route(
-                "/challenge/:challenge_id/guess/validation/:guess",
-                get(validation_handler),
-            )
-            .layer(Extension(application_service.clone()))
-            .layer(TraceLayer::new_for_http());
+        let app = Self::router(Arc::new(application_service));
 
         axum::Server::from_tcp(listener)
             .unwrap()
             .serve(app.into_make_service())
             .await
             .unwrap();
+    }
+
+    fn router(application_service: Arc<ApplicationService>) -> Router {
+        Router::new()
+            .route("/admin/status", get(status_handler))
+            .route("/challenge/latest", get(latest_challenge_handler))
+            .route(
+                "/challenge/:challenge_id/guess/validation/:guess",
+                get(validation_handler),
+            )
+            .layer(Extension(application_service))
+            .layer(TraceLayer::new_for_http())
     }
 }
