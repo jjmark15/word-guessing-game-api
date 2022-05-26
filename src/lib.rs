@@ -1,7 +1,7 @@
 extern crate core;
 
 use std::future::Future;
-use std::net::{IpAddr, Ipv6Addr, SocketAddr, TcpListener};
+use std::net::{IpAddr, Ipv4Addr, SocketAddr, TcpListener};
 use std::path::Path;
 
 use crate::application::ApplicationService;
@@ -42,7 +42,7 @@ impl App {
     }
 
     fn tcp_listener(port: u16) -> TcpListener {
-        let address = SocketAddr::new(IpAddr::V6(Ipv6Addr::LOCALHOST), port);
+        let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), port);
         TcpListener::bind(address).unwrap()
     }
 
